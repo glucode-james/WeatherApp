@@ -6,3 +6,10 @@
 //
 
 import Foundation
+
+struct CurrentConditions: Decodable {
+    let temp_C: String
+    let weatherIconUrl: [StringValue]
+    let weatherDesc: [StringValue]
+    let FeelsLikeC: String
+}

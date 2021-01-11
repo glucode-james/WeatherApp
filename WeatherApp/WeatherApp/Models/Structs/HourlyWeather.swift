@@ -6,3 +6,10 @@
 //
 
 import Foundation
+
+struct HourlyWeather: Decodable {
+    let time: String
+    let tempC: String
+    let weatherIconUrl: [StringValue]
+    let chanceofrain: String
+}
