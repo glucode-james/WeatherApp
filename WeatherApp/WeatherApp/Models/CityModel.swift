@@ -33,7 +33,7 @@ class CityModel: CityModelProtocol {
 
         task.resume()
     }
-    
+
     private func handleSearchResponse(data: Data?,
                                       response: URLResponse?,
                                       error: Error?,

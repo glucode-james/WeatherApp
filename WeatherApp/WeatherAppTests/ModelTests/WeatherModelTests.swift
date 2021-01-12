@@ -61,8 +61,11 @@ class WeatherModelTests: XCTestCase {
     }
 
     func testLoadInvalidWeather() throws {
-        var currentConditionsResult: CurrentConditions?
-        var dailyWeatherResult: [DailyWeather]?
+        var currentConditionsResult: CurrentConditions? = CurrentConditions(temp_C: "",
+                                                        weatherIconUrl: [],
+                                                        weatherDesc: [],
+                                                        FeelsLikeC: "")
+        var dailyWeatherResult: [DailyWeather]? = [DailyWeather]()
         var successResult = true
         var messageResult = ""
 

@@ -15,6 +15,73 @@ class WeatherModel {
                                                                _ currentConditions: CurrentConditions?,
                                                                _ dailyWeather: [DailyWeather]?) -> Void) {
         // We will use the lat/lon search. Names might have duplicates or overlap
-        
+        guard let url = APIModel.buildURL(for: APIModel.APIFunction.weather,
+                                          with: [URLQueryItem(name: "q", value: "\(city.latitude),\(city.longitude)")]) else {
+            completion(false, "Invalid URL", nil, nil)
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+
+            self.handleSearchResponse(data: data, response: response, error: error, completion: completion)
+        }
+
+        task.resume()
+    }
+
+    private func handleSearchResponse(data: Data?,
+                                      response: URLResponse?,
+                                      error: Error?,
+                                      completion: @escaping  (_ success: Bool,
+                                                              _ message: String,
+                                                              _ currentConditions: CurrentConditions?,
+                                                              _ dailyWeather: [DailyWeather]?) -> Void) {
+
+        var success = false
+        var message = "Invalid server response."
+        var currentConditions: CurrentConditions?
+        var dailyWeather: [DailyWeather]?
+
+        if let error = error {
+            message = error.localizedDescription
+        } else if let response = response as? HTTPURLResponse, response.statusCode != 200 {
+            message = "Unexpected server response. Please try again."
+        } else if let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data,
+                                                               options: .allowFragments) as? [String: Any] {
+            // Process the response
+            if let jsonData = json["data"] as? [String: Any] {
+                if let jsonError = jsonData["error"] as? [[String: String]],
+                   jsonError.count >= 1,
+                   let jsonMessage = jsonError[0]["msg"] {
+                    message = jsonMessage
+                } else if let currentConditionJson = jsonData["current_condition"] as? [[String: Any]],
+                          currentConditionJson.count >= 1,
+                          let weatherJson = jsonData["weather"] as? [[String: Any]] {
+
+                    // if we got the current conditions and weather json, encode it to data and decode the structs
+                    let decoder = JSONDecoder()
+                    if let encodedCurrentConditions = try? JSONSerialization.data(withJSONObject: currentConditionJson[0],
+                                                                                  options: .prettyPrinted),
+                       let currentConditionsResult = try? decoder.decode(CurrentConditions.self, from: encodedCurrentConditions),
+                       let encodedWeather = try? JSONSerialization.data(withJSONObject: weatherJson,
+                                                                        options: .prettyPrinted),
+                       let dailyWeatherResult = try? decoder.decode([DailyWeather].self, from: encodedWeather) {
+                        success = true
+                        message = ""
+
+                        currentConditions = currentConditionsResult
+                        dailyWeather = dailyWeatherResult
+                    } else {
+                        message = "Unexpected server response. Please try again."
+                    }
+
+                } else {
+                    message = "Unexpected server response. Please try again."
+                }
+            }
+        }
+
+        completion(success, message, currentConditions, dailyWeather)
     }
 }
