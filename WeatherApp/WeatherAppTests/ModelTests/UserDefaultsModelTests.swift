@@ -10,9 +10,9 @@ import XCTest
 
 class UserDefaultsModelTests: XCTestCase {
 
-    private let testCity1 = City(name: "Strand", country: "South Africa")
-    private let testCity2 = City(name: "Pretoria", country: "South Africa")
-    private let testCity3 = City(name: "Edinburgh", country: "Scotland")
+    private let testCity1 = City(city: "Strand", country: "South Africa", latitude: "-33.917", longitude: "18.417")
+    private let testCity2 = City(city: "Pretoria", country: "South Africa", latitude: "-25.747", longitude: "28.188")
+    private let testCity3 = City(city: "Edinburgh", country: "Scotland", latitude: "55.949", longitude: "-3.163")
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

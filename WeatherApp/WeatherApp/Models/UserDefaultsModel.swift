@@ -12,6 +12,10 @@ enum UserDefaultsKey: String {
     case cities
 }
 
+/**
+ This models exists to store the user's last selected city, as well has cities they have selected
+ previously. It doesnt retrieve any of it's data from WorldWeatherOnline, just saves what it is given.
+ */
 class UserDefaultsModel {
 
     private static let instance = UserDefaultsModel()
@@ -28,14 +32,6 @@ class UserDefaultsModel {
         userDefaults = UserDefaults.standard
         jsonEncoder = JSONEncoder()
         jsonDecoder = JSONDecoder()
-    }
-
-    func save(string: String, with key: UserDefaultsKey) {
-        userDefaults.set(string, forKey: key.rawValue)
-    }
-
-    func string(with key: UserDefaultsKey) -> String? {
-        return userDefaults.string(forKey: key.rawValue)
     }
 
     func selectedCity() -> City? {
@@ -59,10 +55,11 @@ class UserDefaultsModel {
     }
 
     func cities() -> [City] {
-        guard let encodedData = userDefaults.array(forKey: UserDefaultsKey.cities.rawValue) as? [Data] else {
-            return []
-        }
         var cities = [City]()
+
+        guard let encodedData = userDefaults.array(forKey: UserDefaultsKey.cities.rawValue) as? [Data] else {
+            return cities
+        }
 
         for data in encodedData {
             if let city = try? jsonDecoder.decode(City.self, from: data) {

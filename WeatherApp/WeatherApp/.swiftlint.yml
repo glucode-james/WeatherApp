@@ -1,3 +1,77 @@
+# Rules based on default swiftlint, but iteratively adjusted based on raywenderlich style guide
+identifier_name:
+  min_length: 1 #
+type_name:
+  min_length: 4
+  max_length: 60 #Descriptive types have been preferred.
+line_length:
+  warning: 200
+  error: 500
+  ignores_function_declarations: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+function_body_length: 20
+closure_body_length: 10
+cyclomatic_complexity:
+  ignores_case_statements: true
+indentation: 2
 disabled_rules:
+  - function_parameter_count
+  - multiple_closures_with_trailing_closure
   - identifier_name
-
+opt_in_rules:
+  - file_name
+  - implicitly_unwrapped_optional
+  - force_unwrapping
+  - fallthrough
+  - multiline_parameters
+  - redundant_type_annotation
+  - redundant_nil_coalescing
+  - identical_operands
+  - prohibited_super_call
+#  - private_outlet
+#  - private_action
+  - overridden_super_call
+  - unused_import
+  - vertical_parameter_alignment_on_call
+  - closure_body_length
+custom_rules:
+  members_naming_id:
+    name: "Naming substring ID Capitalization"
+    message: "\"ID\" is preferred in non prefix variable substrings."
+    included: ".*\\.swift"
+    regex: "[a-zA-Z0-9](Id)[^entifier]"
+    match_kinds:
+    - placeholder
+    - typeidentifier
+    - identifier
+  members_naming_url:
+    name: "Naming substring URL Capitalization"
+    message: "\"URL\" is preferred in non prefix variable substrings."
+    included: ".*\\.swift"
+    regex: "[a-zA-Z0-9](Url|URl|UrL)"
+    match_kinds:
+    - placeholder
+    - typeidentifier
+    - identifier
+  unowned:
+    name: "Unowned"
+    message: "\"weak\" is preferred to unowned unless you really need the very very slight performance gain."
+    included: ".*\\.swift"
+    regex: "unowned "
+    match_kinds:
+    - attribute.builtin
+    - identifier
+  members_header:
+    name: "File headers discouraged"
+    message: "File headers are discouraged in this project."
+    included: ".*\\.swift"
+    regex: "Created by"
+    match_kinds:
+    - comment
+    - doccomment
+  print_logging:
+    name: "Debug Logging"
+    message: "Debug print statements should not be commited, please use DSYLogger"
+    included: ".*\\.swift"
+    regex: "print\\(|NSLog"
