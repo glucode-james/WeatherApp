@@ -129,6 +129,8 @@ class LocalCityViewModelTests: XCTestCase, CityViewModelDelegate {
         XCTAssertEqual(localCityViewModel.cityViewModelCityCount(), 2)
     }
 
+    /* This is actually unnecessary for the local search as it doesnt have any asynchronous calls.
+     However, this more closely imitates the functionality of the app, so I am leaving it in. */
     func cityViewModel(updated dataSource: CityDataSource, with error: Bool, message: String) {
         testExpectation?.fulfill()
     }
