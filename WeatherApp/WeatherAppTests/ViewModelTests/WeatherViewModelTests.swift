@@ -55,7 +55,7 @@ class WeatherViewModelTests: XCTestCase, WeatherViewModelDelegate {
         testExpectation = expectation
 
         viewModel.loadWeatherForSelectedCity()
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
 
         // Check that all the different data has been populated
         XCTAssertNotNil(viewModel.getCurrentConditions())
@@ -70,7 +70,7 @@ class WeatherViewModelTests: XCTestCase, WeatherViewModelDelegate {
         testExpectation = expectation
 
         viewModel.loadWeatherFor(lat: testCity.latitude, long: testCity.longitude)
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
 
         // Check that all the different data has been populated
         XCTAssertNotNil(viewModel.getCurrentConditions())

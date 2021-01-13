@@ -28,8 +28,7 @@ class WeatherViewModel {
         self.weatherModel = WeatherModel()
 
         timeFormatter = DateFormatter()
-        timeFormatter.defaultDate = Date()
-        timeFormatter.dateFormat = "HHss"
+        timeFormatter.dateFormat = "yyyy-MM-dd HHss"
     }
 
     func getSelectedCity() -> City? {
@@ -100,7 +99,7 @@ class WeatherViewModel {
             for daily in dailyWeather where hourly.count < 5 {
                 for hour in daily.hourly where hourly.count < 5 {
 
-                    guard let hourDate = self.formatTime(time: hour.time) else {
+                    guard let hourDate = self.formatTime(date: daily.date, time: hour.time) else {
                         break
                     }
 
@@ -118,12 +117,12 @@ class WeatherViewModel {
         }
     }
 
-    private func formatTime(time: String) -> Date? {
+    private func formatTime(date: String, time: String) -> Date? {
         var paddedTime = time
         while paddedTime.count < 4 {
             paddedTime = "0\(paddedTime)"
         }
 
-        return timeFormatter.date(from: paddedTime)
+        return timeFormatter.date(from: "\(date) \(paddedTime)")
     }
 }
