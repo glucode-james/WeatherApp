@@ -5,16 +5,10 @@
 
 import Foundation
 
-protocol CityModelProtocol {
-    func doCitySearch(search value: String, completion: @escaping  (_ success: Bool,
-                                                                    _ message: String,
-                                                                    _ cities: [City]) -> Void)
-}
-
 /**
  This models exists search for and return cities.
  */
-class CityModel: CityModelProtocol {
+class CityModel {
 
     func doCitySearch(search value: String, completion: @escaping  (_ success: Bool,
                                                                     _ message: String,

@@ -62,9 +62,14 @@ class WeatherModelTests: XCTestCase {
 
     func testLoadInvalidWeather() throws {
         var currentConditionsResult: CurrentConditions? = CurrentConditions(temp_C: "",
-                                                        weatherIconUrl: [],
-                                                        weatherDesc: [],
-                                                        FeelsLikeC: "")
+                                                                            weatherIconUrl: [],
+                                                                            weatherDesc: [],
+                                                                            FeelsLikeC: "",
+                                                                            uvIndex: "",
+                                                                            windspeedKmph: "",
+                                                                            winddirDegree: "",
+                                                                            winddir16Point: "",
+                                                                            humidity: "")
         var dailyWeatherResult: [DailyWeather]? = [DailyWeather]()
         var successResult = true
         var messageResult = ""
@@ -88,6 +93,36 @@ class WeatherModelTests: XCTestCase {
         XCTAssertGreaterThan(messageResult.count, 0)
         XCTAssertNil(currentConditionsResult)
         XCTAssertNil(dailyWeatherResult)
+    }
+
+    func testLoadLatLongWeather() throws {
+        var currentConditionsResult: CurrentConditions?
+        var dailyWeatherResult: [DailyWeather]?
+        var successResult = false
+        var messageResult = "This is a message"
+
+        let expectation = self.expectation(description: "LatLongWeatherSearch")
+
+        weatherModel.lookupWeather(lat: testCity1.latitude,
+                                   long: testCity1.longitude,
+                                   completion: {(success, message, currentConditions, dailyWeather) in
+
+                                    successResult = success
+                                    messageResult = message
+                                    currentConditionsResult = currentConditions
+                                    dailyWeatherResult = dailyWeather
+
+                                    expectation.fulfill()
+
+                                   })
+
+        waitForExpectations(timeout: 5, handler: nil)
+
+        XCTAssertEqual(successResult, true)
+        XCTAssertEqual(messageResult, "")
+        XCTAssertNotNil(currentConditionsResult)
+        XCTAssertNotNil(dailyWeatherResult)
+        XCTAssertGreaterThan(dailyWeatherResult?.count ?? 0, 0)
     }
 
 }

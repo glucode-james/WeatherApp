@@ -45,4 +45,25 @@ class LocalSearchCityViewModel: BaseCityViewModel {
 
         UserDefaultsModel.getInstance().saveSelected(city: city)
     }
+
+    func deleteSavedCity(at index: Int) {
+        guard let city = cityViewModelCity(at: index) else {
+            return
+        }
+
+        // Remove the city from the view controller cities
+        cities.remove(at: index)
+
+        // The city needs to be removed from the base list, not the current list in the view model
+        var allCities = UserDefaultsModel.getInstance().cities()
+
+        if allCities.contains(city),
+           let firstIndex = allCities.firstIndex(of: city) {
+
+            // Remove the city from the saved cities
+            allCities.remove(at: firstIndex)
+            UserDefaultsModel.getInstance().save(cities: allCities)
+            // The UI will handle removing the element from the display, so I will no call a delegate update here
+        }
+    }
 }

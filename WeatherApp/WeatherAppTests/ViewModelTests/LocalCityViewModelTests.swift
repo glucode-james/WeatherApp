@@ -33,6 +33,8 @@ class LocalCityViewModelTests: XCTestCase, CityViewModelDelegate {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         localCityViewModel = nil
 
+        testExpectation = nil
+
         // Clear any city data currently in the user defaults
         UserDefaults.standard.setValue(nil, forKey: UserDefaultsKey.cities.rawValue)
         UserDefaults.standard.setValue(nil, forKey: UserDefaultsKey.selectedCity.rawValue)
@@ -60,7 +62,6 @@ class LocalCityViewModelTests: XCTestCase, CityViewModelDelegate {
         XCTAssertEqual(testCity2, localCityViewModel.cityViewModelCity(at: 1))
         XCTAssertEqual(testCity1, localCityViewModel.cityViewModelCity(at: 2))
         XCTAssertEqual(testCity4, localCityViewModel.cityViewModelCity(at: 3))
-
     }
 
     func testSearchCitiesValue() throws {
@@ -127,6 +128,32 @@ class LocalCityViewModelTests: XCTestCase, CityViewModelDelegate {
         localCityViewModel.cityViewModel(search: "")
         waitForExpectations(timeout: 1, handler: nil)
         XCTAssertEqual(localCityViewModel.cityViewModelCityCount(), 2)
+    }
+
+    func testDeleteLocalCity() throws {
+        // First add some test cities
+        localCityViewModel.setCurrent(city: testCity1)
+        localCityViewModel.setCurrent(city: testCity2)
+        localCityViewModel.setCurrent(city: testCity3)
+        localCityViewModel.setCurrent(city: testCity4)
+
+        // then do a search with a blank string. It should return all of them
+        let expectation = self.expectation(description: "DeleteLocalCity")
+        testExpectation = expectation
+
+        localCityViewModel.cityViewModel(search: "")
+        waitForExpectations(timeout: 1, handler: nil)
+
+        // Check that it saved all of them
+        XCTAssertEqual(localCityViewModel.cityViewModelCityCount(), 4)
+
+        // Remove a city
+        localCityViewModel.deleteSavedCity(at: 1)
+
+        // Check that the city was removed from the view model list
+        XCTAssertEqual(localCityViewModel.cityViewModelCityCount(), 3)
+        // And the user defaults
+        XCTAssertEqual(UserDefaultsModel.getInstance().cities().count, 3)
     }
 
     /* This is actually unnecessary for the local search as it doesnt have any asynchronous calls.

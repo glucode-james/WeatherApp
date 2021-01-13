@@ -10,13 +10,15 @@ import Foundation
  */
 class WeatherModel {
 
-    func lookupWeather(for city: City, completion: @escaping  (_ success: Bool,
-                                                               _ message: String,
-                                                               _ currentConditions: CurrentConditions?,
-                                                               _ dailyWeather: [DailyWeather]?) -> Void) {
+    func lookupWeather(lat: String,
+                       long: String,
+                       completion: @escaping  (_ success: Bool,
+                                               _ message: String,
+                                               _ currentConditions: CurrentConditions?,
+                                               _ dailyWeather: [DailyWeather]?) -> Void) {
         // We will use the lat/lon search. Names might have duplicates or overlap
         guard let url = APIModel.buildURL(for: APIModel.APIFunction.weather,
-                                          with: [URLQueryItem(name: "q", value: "\(city.latitude),\(city.longitude)")]) else {
+                                          with: [URLQueryItem(name: "q", value: "\(lat),\(long)")]) else {
             completion(false, "Invalid URL", nil, nil)
             return
         }
@@ -27,6 +29,13 @@ class WeatherModel {
         }
 
         task.resume()
+    }
+
+    func lookupWeather(for city: City, completion: @escaping  (_ success: Bool,
+                                                               _ message: String,
+                                                               _ currentConditions: CurrentConditions?,
+                                                               _ dailyWeather: [DailyWeather]?) -> Void) {
+        self.lookupWeather(lat: city.latitude, long: city.longitude, completion: completion)
     }
 
     private func handleSearchResponse(data: Data?,

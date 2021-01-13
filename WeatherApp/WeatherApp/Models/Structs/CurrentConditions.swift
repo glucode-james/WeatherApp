@@ -2,8 +2,6 @@
 //  CurrentConditions.swift
 //  WeatherApp
 //
-//  Created by James Sinclair on 2021/01/11.
-//
 
 import Foundation
 
@@ -14,4 +12,9 @@ struct CurrentConditions: Decodable {
     let weatherIconUrl: [StringValue]
     let weatherDesc: [StringValue]
     let FeelsLikeC: String
+    let uvIndex: String
+    let windspeedKmph: String
+    let winddirDegree: String
+    let winddir16Point: String
+    let humidity: String
 }

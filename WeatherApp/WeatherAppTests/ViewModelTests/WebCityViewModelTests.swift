@@ -23,6 +23,8 @@ class WebCityViewModelTests: XCTestCase, CityViewModelDelegate {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         webCityViewModel = nil
+
+        testExpectation = nil
     }
 
     func testSearchCitiesWithReturn() throws {

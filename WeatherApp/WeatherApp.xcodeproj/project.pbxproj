@@ -222,7 +222,6 @@
 		AFAB515125AC4570003357CD /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				AFAB518B25AC93BF003357CD /* MockModels */,
 				AFAB515F25AC5671003357CD /* Structs */,
 				AFAB515A25AC566E003357CD /* UserDefaultsModel.swift */,
 				AFAB518125AC71D4003357CD /* WeatherModel.swift */,
@@ -253,13 +252,6 @@
 				AFAB517C25AC7000003357CD /* StringValue.swift */,
 			);
 			path = Structs;
-			sourceTree = "<group>";
-		};
-		AFAB518B25AC93BF003357CD /* MockModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = MockModels;
 			sourceTree = "<group>";
 		};
 		AFAB519625AC97F8003357CD /* ModelTests */ = {
