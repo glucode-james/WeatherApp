@@ -17,4 +17,12 @@ struct CurrentConditions: Decodable {
     let winddirDegree: String
     let winddir16Point: String
     let humidity: String
+
+    func getWeatherDesc() -> String {
+        return weatherDesc.count > 0 ? weatherDesc[0].value : ""
+    }
+
+    func getWeatherIconURL() -> String {
+        return weatherIconUrl.count > 0 ? weatherIconUrl[0].value : ""
+    }
 }

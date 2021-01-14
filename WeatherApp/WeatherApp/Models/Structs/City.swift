@@ -26,4 +26,13 @@ struct City: Codable, Equatable {
     static func == (lhs: City, rhs: City) -> Bool {
         return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
     }
+
+    /* The following two functions are to compensate for WWO's return format */
+    func cityName() -> String {
+        return self.areaName.count > 0 ? areaName[0].value : ""
+    }
+
+    func countryName() -> String {
+        return self.country.count > 0 ? country[0].value : ""
+    }
 }

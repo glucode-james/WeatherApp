@@ -8,7 +8,10 @@ import Foundation
 class LocalSearchCityViewModel: BaseCityViewModel {
 
     override init() {
+        super.init()
 
+        // Set the initial list to all the current saved cities
+        self.cities = UserDefaultsModel.getInstance().cities()
     }
 
     override func cityViewModel(search value: String) {
@@ -24,7 +27,11 @@ class LocalSearchCityViewModel: BaseCityViewModel {
         }
 
         // update the delegate
-        delegate?.cityViewModel(updated: self, with: true, message: "")
+        delegate?.cityViewModel(updated: self, with: false, message: "")
+    }
+
+    func savedCityCount() -> Int {
+        return UserDefaultsModel.getInstance().cities().count
     }
 
     /**
@@ -35,10 +42,7 @@ class LocalSearchCityViewModel: BaseCityViewModel {
 
         if !cities.contains(city) {
             cities.append(city)
-            cities.sort {
-                ($0.areaName.count > 0 ? $0.areaName[0].value : "") <
-                    ($1.areaName.count > 0 ? $1.areaName[0].value : "")
-            }
+            cities.sort { $0.cityName() < $1.cityName() }
 
             UserDefaultsModel.getInstance().save(cities: cities)
         }
