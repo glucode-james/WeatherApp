@@ -2,8 +2,6 @@
 //  CityViewController.swift
 //  WeatherApp
 //
-//  Created by James Sinclair on 2021/01/12.
-//
 
 import UIKit
 

@@ -2,8 +2,6 @@
 //  WebCityViewModelTests.swift
 //  WeatherAppTests
 //
-//  Created by James Sinclair on 2021/01/13.
-//
 
 import XCTest
 @testable import WeatherApp

@@ -2,8 +2,6 @@
 //  UserDefaultsModelTests.swift
 //  WeatherAppTests
 //
-//  Created by James Sinclair on 2021/01/11.
-//
 
 import XCTest
 @testable import WeatherApp

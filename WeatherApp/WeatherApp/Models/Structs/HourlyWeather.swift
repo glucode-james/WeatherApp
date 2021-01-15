@@ -2,8 +2,6 @@
 //  HourlyWeather.swift
 //  WeatherApp
 //
-//  Created by James Sinclair on 2021/01/11.
-//
 
 import Foundation
 
@@ -14,4 +12,8 @@ struct HourlyWeather: Decodable {
      received from WorldWeatherOnline */
     let weatherIconUrl: [StringValue]
     let chanceofrain: String
+
+    func getWeatherIconURL() -> String {
+        return weatherIconUrl.count > 0 ? weatherIconUrl[0].value : ""
+    }
 }
