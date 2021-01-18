@@ -143,9 +143,7 @@ class WeatherViewController: UIViewController {
             let hourData = viewModel.getHourlyWeather(at: i)
 
             hourlyViews[i].timeLabel.text = formatHourlyTime(timeString: hourData?.time ?? "")
-
             hourlyViews[i].weatherIconImage.downloaded(from: hourData?.getWeatherIconURL() ?? "")
-
             hourlyViews[i].temperatureLabel.text = "\(hourData?.tempC ?? "?")°"
             hourlyViews[i].chanceOfRainImageView.image = dropImageFor(chance: Int(hourData?.chanceofrain ?? "0") ?? 0)
             hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.chanceofrain ?? "?")%"
@@ -158,36 +156,52 @@ class WeatherViewController: UIViewController {
 
             dailyViews[i].dayLabel.text = i == 0 ? "Today" : formatDailyDay(dateString: dayData?.date ?? "")
 
-            /* Work out the min and max icon indexes to set. Also work out average chance of rain */
-            var minTemp = 100, maxTemp = -100
-            var minURL = "", maxURL = ""
-            var totalChanceOfRain = 0, records = 0
-            if let dayData = dayData {
-                for hourData in dayData.hourly {
-                    let hourTemp = Int(hourData.tempC)
-                    if hourTemp ?? 100 < minTemp {
-                        minTemp = hourTemp ?? 100
-                        minURL = hourData.getWeatherIconURL()
-                    }
-                    if hourTemp ?? -100 > maxTemp {
-                        maxTemp = hourTemp ?? -100
-                        maxURL = hourData.getWeatherIconURL()
-                    }
-
-                    totalChanceOfRain += (Int(hourData.chanceofrain) ?? 0)
-                    records += 1
-                }
-            }
-
-            let chanceOfRain = records > 0 ? totalChanceOfRain / records : 0
+            let chanceOfRain = calculateDailyChanceOfRain(dayData: dayData)
             dailyViews[i].chanceOfRainImageView.image = dropImageFor(chance: chanceOfRain)
             dailyViews[i].chanceOfRainLabel.text = "\(chanceOfRain)%"
 
-            dailyViews[i].maxWeatherIconImage.downloaded(from: maxURL)
-            dailyViews[i].minWeatherIconImage.downloaded(from: minURL)
+            let minMaxURLs = getMinMaxURL(dayData: dayData)
+            dailyViews[i].maxWeatherIconImage.downloaded(from: minMaxURLs.maxURL)
+            dailyViews[i].minWeatherIconImage.downloaded(from: minMaxURLs.minURL)
 
             dailyViews[i].temperatureLabel.text = "\(dayData?.maxtempC ?? "?")°/\(dayData?.mintempC ?? "?")°"
         }
+    }
+
+    private func getMinMaxURL(dayData: DailyWeather?) -> (minURL: String, maxURL: String) {
+        guard let dayData = dayData else {
+            return ("", "")
+        }
+
+        /* Work out the min and max icon indexes to set. Also work out average chance of rain */
+        var minTemp = 100, maxTemp = -100
+        var minURL = "", maxURL = ""
+        for hourData in dayData.hourly {
+            let hourTemp = Int(hourData.tempC)
+            if hourTemp ?? 100 < minTemp {
+                minTemp = hourTemp ?? 100
+                minURL = hourData.getWeatherIconURL()
+            }
+            if hourTemp ?? -100 > maxTemp {
+                maxTemp = hourTemp ?? -100
+                maxURL = hourData.getWeatherIconURL()
+            }
+        }
+
+        return (minURL, maxURL)
+    }
+
+    private func calculateDailyChanceOfRain(dayData: DailyWeather?) -> Int {
+        guard let dayData = dayData, dayData.hourly.count > 0 else {
+            return 0
+        }
+
+        var totalChanceOfRain = 0
+        for hourlyData in dayData.hourly {
+            totalChanceOfRain += Int(hourlyData.chanceofrain) ?? 0
+        }
+
+        return totalChanceOfRain / dayData.hourly.count
     }
 
     private func formatHourlyTime(timeString: String) -> String {

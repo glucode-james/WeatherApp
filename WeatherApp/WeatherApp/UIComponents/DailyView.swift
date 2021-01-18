@@ -124,15 +124,37 @@ class DailyView: UIView {
         constraints.append(self.heightAnchor.constraint(equalToConstant: 35))
 
         // Day
-        constraints.append(contentsOf: [
+        constraints.append(contentsOf: addDayConstraints())
+
+        // Rain
+        constraints.append(contentsOf: addRainConstraints())
+
+        // Max Icon
+        constraints.append(contentsOf: addMaxConstraints())
+
+        // Min Icon
+        constraints.append(contentsOf: addMinConstraints())
+
+        // temperature
+        constraints.append(contentsOf: addTemperatureConstraints())
+
+        NSLayoutConstraint.activate(constraints)
+    }
+
+    // MARK: - Constraints Functions
+    private func addDayConstraints() -> [NSLayoutConstraint] {
+        dayLabel.constrainEdges(to: dayContainer)
+        return [
             dayContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             dayContainer.topAnchor.constraint(equalTo: self.topAnchor),
             dayContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            dayContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.25)
-        ])
-        dayLabel.constrainEdges(to: dayContainer)
+            dayContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.30)
+        ]
+    }
 
-        // Rain
+    private func addRainConstraints() -> [NSLayoutConstraint] {
+        var constraints = [NSLayoutConstraint]()
+
         constraints.append(contentsOf: [
             chanceOfRainContainer.leadingAnchor.constraint(equalTo: dayContainer.trailingAnchor),
             chanceOfRainContainer.topAnchor.constraint(equalTo: self.topAnchor),
@@ -154,34 +176,37 @@ class DailyView: UIView {
             chanceOfRainLabel.trailingAnchor.constraint(equalTo: chanceOfRainContainer.trailingAnchor)
         ])
 
-        // Max Icon
-        constraints.append(contentsOf: [
+        return constraints
+    }
+
+    private func addMaxConstraints() -> [NSLayoutConstraint] {
+        maxWeatherIconImage.constrainEdges(to: maxWeatherIconContainer)
+        return [
             maxWeatherIconContainer.leadingAnchor.constraint(equalTo: chanceOfRainContainer.trailingAnchor),
             maxWeatherIconContainer.topAnchor.constraint(equalTo: self.topAnchor),
             maxWeatherIconContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             maxWeatherIconContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.1)
-        ])
-        maxWeatherIconImage.constrainEdges(to: maxWeatherIconContainer)
+        ]
+    }
 
-        // Min Icon
-        constraints.append(contentsOf: [
+    private func addMinConstraints() -> [NSLayoutConstraint] {
+        minWeatherIconImage.constrainEdges(to: minWeatherIconContainer)
+        return [
             minWeatherIconContainer.leadingAnchor.constraint(equalTo: maxWeatherIconContainer.trailingAnchor),
             minWeatherIconContainer.topAnchor.constraint(equalTo: self.topAnchor),
             minWeatherIconContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             minWeatherIconContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.1)
-        ])
-        minWeatherIconImage.constrainEdges(to: minWeatherIconContainer)
+        ]
+    }
 
-        // temperature
-        constraints.append(contentsOf: [
+    private func addTemperatureConstraints() -> [NSLayoutConstraint] {
+        temperatureLabel.constrainEdges(to: temperatureContainer)
+        return [
             temperatureContainer.leadingAnchor.constraint(equalTo: minWeatherIconContainer.trailingAnchor),
             temperatureContainer.topAnchor.constraint(equalTo: self.topAnchor),
             temperatureContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             temperatureContainer.trailingAnchor.constraint(equalTo: self.trailingAnchor)
-        ])
-        temperatureLabel.constrainEdges(to: temperatureContainer)
-
-        NSLayoutConstraint.activate(constraints)
+        ]
     }
 }
 

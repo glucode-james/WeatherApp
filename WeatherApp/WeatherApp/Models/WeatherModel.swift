@@ -64,27 +64,12 @@ class WeatherModel {
                    jsonError.count >= 1,
                    let jsonMessage = jsonError[0]["msg"] {
                     message = jsonMessage
-                } else if let currentConditionJson = jsonData["current_condition"] as? [[String: Any]],
-                          currentConditionJson.count >= 1,
-                          let weatherJson = jsonData["weather"] as? [[String: Any]] {
+                } else if let decodedWeather = handleWeatherDecode(jsonData: jsonData) {
 
-                    // if we got the current conditions and weather json, encode it to data and decode the structs
-                    let decoder = JSONDecoder()
-                    if let encodedCurrentConditions = try? JSONSerialization.data(withJSONObject: currentConditionJson[0],
-                                                                                  options: .prettyPrinted),
-                       let currentConditionsResult = try? decoder.decode(CurrentConditions.self, from: encodedCurrentConditions),
-                       let encodedWeather = try? JSONSerialization.data(withJSONObject: weatherJson,
-                                                                        options: .prettyPrinted),
-                       let dailyWeatherResult = try? decoder.decode([DailyWeather].self, from: encodedWeather) {
-                        success = true
-                        message = ""
-
-                        currentConditions = currentConditionsResult
-                        dailyWeather = dailyWeatherResult
-                    } else {
-                        message = "Unexpected server response. Please try again."
-                    }
-
+                    success = true
+                    message = ""
+                    currentConditions = decodedWeather.currentConditions
+                    dailyWeather = decodedWeather.dailyWeather
                 } else {
                     message = "Unexpected server response. Please try again."
                 }
@@ -92,5 +77,26 @@ class WeatherModel {
         }
 
         completion(success, message, currentConditions, dailyWeather)
+    }
+
+    private func handleWeatherDecode(jsonData: [String: Any]) -> (currentConditions: CurrentConditions?, dailyWeather: [DailyWeather]?)? {
+
+        if let currentConditionJson = jsonData["current_condition"] as? [[String: Any]],
+                  currentConditionJson.count >= 1,
+                  let weatherJson = jsonData["weather"] as? [[String: Any]] {
+
+            let decoder = JSONDecoder()
+
+            if let encodedCurrentConditions = try? JSONSerialization.data(withJSONObject: currentConditionJson[0],
+                                                                          options: .prettyPrinted),
+               let encodedWeather = try? JSONSerialization.data(withJSONObject: weatherJson,
+                                                                options: .prettyPrinted) {
+
+                return (try? decoder.decode(CurrentConditions.self, from: encodedCurrentConditions),
+                        try? decoder.decode([DailyWeather].self, from: encodedWeather))
+            }
+        }
+
+        return nil
     }
 }
