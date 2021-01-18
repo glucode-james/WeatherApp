@@ -51,6 +51,11 @@ class WeatherViewController: UIViewController {
 
     let refreshControl = UIRefreshControl()
 
+    /* Rain drop images for reuse */
+    let emptyDrop = UIImage(named: "EmptyDrop")
+    let halfDrop = UIImage(named: "HalfDrop")
+    let fullDrop = UIImage(named: "FullDrop")
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -142,6 +147,7 @@ class WeatherViewController: UIViewController {
             hourlyViews[i].weatherIconImage.downloaded(from: hourData?.getWeatherIconURL() ?? "")
 
             hourlyViews[i].temperatureLabel.text = "\(hourData?.tempC ?? "?")°"
+            hourlyViews[i].chanceOfRainImageView.image = dropImageFor(chance: Int(hourData?.chanceofrain ?? "0") ?? 0)
             hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.chanceofrain ?? "?")%"
         }
     }
@@ -173,7 +179,9 @@ class WeatherViewController: UIViewController {
                 }
             }
 
-            dailyViews[i].chanceOfRainLabel.text = "\(records > 0 ? totalChanceOfRain / records : 0)%"
+            let chanceOfRain = records > 0 ? totalChanceOfRain / records : 0
+            dailyViews[i].chanceOfRainImageView.image = dropImageFor(chance: chanceOfRain)
+            dailyViews[i].chanceOfRainLabel.text = "\(chanceOfRain)%"
 
             dailyViews[i].maxWeatherIconImage.downloaded(from: maxURL)
             dailyViews[i].minWeatherIconImage.downloaded(from: minURL)
@@ -200,6 +208,16 @@ class WeatherViewController: UIViewController {
             return dateString
         }
         return dailyOutFormatter.string(from: date)
+    }
+
+    private func dropImageFor(chance: Int) -> UIImage? {
+        if chance > 70 {
+            return fullDrop
+        } else if chance > 20 {
+            return halfDrop
+        } else {
+            return emptyDrop
+        }
     }
 }
 

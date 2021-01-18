@@ -30,11 +30,18 @@ class DailyView: UIView {
         return chanceOfRainContainer
     }()
 
+    lazy var chanceOfRainImageView: UIImageView = {
+        let chanceOfRainImageView = UIImageView()
+        chanceOfRainImageView.contentMode = .scaleAspectFit
+        chanceOfRainImageView.translatesAutoresizingMaskIntoConstraints = false
+        return chanceOfRainImageView
+      }()
+
     lazy var chanceOfRainLabel: UILabel = {
         let chanceOfRainLabel = UILabel()
         chanceOfRainLabel.textColor = .systemGray
         chanceOfRainLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-        chanceOfRainLabel.textAlignment = .center
+        chanceOfRainLabel.textAlignment = .left
         chanceOfRainLabel.translatesAutoresizingMaskIntoConstraints = false
         return chanceOfRainLabel
       }()
@@ -99,6 +106,7 @@ class DailyView: UIView {
         addSubview(dayContainer)
         dayContainer.addSubview(dayLabel)
         addSubview(chanceOfRainContainer)
+        chanceOfRainContainer.addSubview(chanceOfRainImageView)
         chanceOfRainContainer.addSubview(chanceOfRainLabel)
         addSubview(minWeatherIconContainer)
         minWeatherIconContainer.addSubview(minWeatherIconImage)
@@ -120,7 +128,7 @@ class DailyView: UIView {
             dayContainer.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             dayContainer.topAnchor.constraint(equalTo: self.topAnchor),
             dayContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            dayContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.3)
+            dayContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.25)
         ])
         dayLabel.constrainEdges(to: dayContainer)
 
@@ -129,9 +137,22 @@ class DailyView: UIView {
             chanceOfRainContainer.leadingAnchor.constraint(equalTo: dayContainer.trailingAnchor),
             chanceOfRainContainer.topAnchor.constraint(equalTo: self.topAnchor),
             chanceOfRainContainer.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            chanceOfRainContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.2)
+            chanceOfRainContainer.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.25)
         ])
-        chanceOfRainLabel.constrainEdges(to: chanceOfRainContainer)
+
+        constraints.append(contentsOf: [
+            chanceOfRainImageView.leadingAnchor.constraint(equalTo: chanceOfRainContainer.leadingAnchor),
+            chanceOfRainImageView.centerYAnchor.constraint(equalTo: chanceOfRainContainer.centerYAnchor),
+            chanceOfRainImageView.heightAnchor.constraint(equalToConstant: 10),
+            chanceOfRainImageView.widthAnchor.constraint(equalTo: chanceOfRainLabel.heightAnchor)
+        ])
+
+        constraints.append(contentsOf: [
+            chanceOfRainLabel.leadingAnchor.constraint(equalTo: chanceOfRainImageView.trailingAnchor),
+            chanceOfRainLabel.topAnchor.constraint(equalTo: chanceOfRainContainer.topAnchor),
+            chanceOfRainLabel.bottomAnchor.constraint(equalTo: chanceOfRainContainer.bottomAnchor),
+            chanceOfRainLabel.trailingAnchor.constraint(equalTo: chanceOfRainContainer.trailingAnchor)
+        ])
 
         // Max Icon
         constraints.append(contentsOf: [
