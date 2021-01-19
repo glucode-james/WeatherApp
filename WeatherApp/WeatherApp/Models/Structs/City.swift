@@ -14,13 +14,18 @@ struct City: Codable, Equatable {
     let latitude: String
     let longitude: String
 
+    /* For keeping track of locally created objects, this will be nil on data from the backend. */
+    let internalID: String?
+
     /* This is for test purposes, in practice it will be decoded from JSON */
-    init(city: String, country: String, latitude: String, longitude: String) {
+    init(city: String, country: String, latitude: String, longitude: String, internalID: String? = nil) {
         self.areaName = [StringValue(value: city)]
         self.country = [StringValue(value: country)]
 
         self.latitude = latitude
         self.longitude = longitude
+
+        self.internalID = internalID
     }
 
     static func == (lhs: City, rhs: City) -> Bool {

@@ -42,19 +42,10 @@ class WeatherViewController: UIViewController {
     /* View Model */
     private let viewModel = WeatherViewModel()
 
-    /* The date formatter is for the current conditions. The daily formatter is for daily sections and the time is for the hourly */
+    /* The date formatter is for the current conditions. */
     let dateFormatter = DateFormatter()
-    let dailyInFormatter = DateFormatter()
-    let dailyOutFormatter = DateFormatter()
-    let timeInFormatter = DateFormatter()
-    let timeOutFormatter = DateFormatter()
 
     let refreshControl = UIRefreshControl()
-
-    /* Rain drop images for reuse */
-    let emptyDrop = UIImage(named: "EmptyDrop")
-    let halfDrop = UIImage(named: "HalfDrop")
-    let fullDrop = UIImage(named: "FullDrop")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,11 +55,7 @@ class WeatherViewController: UIViewController {
 
         // Configure date formatters
         dateFormatter.dateFormat = "EEEE, dd MMM HH:mm"
-        dailyOutFormatter.dateFormat = "EEEE"
-        dailyInFormatter.dateFormat = "yyyy-MM-dd"
-        timeOutFormatter.dateFormat = "HH:mm"
-        timeInFormatter.dateFormat = "HHmm"
-
+        
         // Configure refresh control for scrollview
         scrollView.refreshControl = refreshControl
         refreshControl.addTarget(self,
@@ -125,15 +112,13 @@ class WeatherViewController: UIViewController {
 
         /* the first entry is today */
         if let today = viewModel.getDailyWeather(at: 0) {
-            currentMinMaxLabel.text = "\(today.maxtempC)°/\(today.mintempC)°"
+            currentMinMaxLabel.text = today.formattedTemp
         } else {
             currentMinMaxLabel.text = ""
         }
 
         currentFeelsLikeLabel.text = "Feels like \(currentConditions.FeelsLikeC)°"
-
         currentConditionsImage.downloaded(from: currentConditions.getWeatherIconURL())
-
         dateLabel.text = dateFormatter.string(from: Date())
     }
 
@@ -142,11 +127,11 @@ class WeatherViewController: UIViewController {
 
             let hourData = viewModel.getHourlyWeather(at: i)
 
-            hourlyViews[i].timeLabel.text = formatHourlyTime(timeString: hourData?.time ?? "")
-            hourlyViews[i].weatherIconImage.downloaded(from: hourData?.getWeatherIconURL() ?? "")
-            hourlyViews[i].temperatureLabel.text = "\(hourData?.tempC ?? "?")°"
-            hourlyViews[i].chanceOfRainImageView.image = dropImageFor(chance: Int(hourData?.chanceofrain ?? "0") ?? 0)
-            hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.chanceofrain ?? "?")%"
+            hourlyViews[i].timeLabel.text = hourData?.formattedTime
+            hourlyViews[i].weatherIconImage.downloaded(from: hourData?.hourlyWeather.getWeatherIconURL() ?? "")
+            hourlyViews[i].temperatureLabel.text = "\(hourData?.hourlyWeather.tempC ?? "?")°"
+            hourlyViews[i].chanceOfRainImageView.image = hourData?.chanceOfRainImage
+            hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.hourlyWeather.chanceofrain ?? "?")%"
         }
     }
 
@@ -154,83 +139,12 @@ class WeatherViewController: UIViewController {
         for i in 0..<dailyViews.count {
             let dayData = viewModel.getDailyWeather(at: i)
 
-            dailyViews[i].dayLabel.text = i == 0 ? "Today" : formatDailyDay(dateString: dayData?.date ?? "")
-
-            let chanceOfRain = calculateDailyChanceOfRain(dayData: dayData)
-            dailyViews[i].chanceOfRainImageView.image = dropImageFor(chance: chanceOfRain)
-            dailyViews[i].chanceOfRainLabel.text = "\(chanceOfRain)%"
-
-            let minMaxURLs = getMinMaxURL(dayData: dayData)
-            dailyViews[i].maxWeatherIconImage.downloaded(from: minMaxURLs.maxURL)
-            dailyViews[i].minWeatherIconImage.downloaded(from: minMaxURLs.minURL)
-
-            dailyViews[i].temperatureLabel.text = "\(dayData?.maxtempC ?? "?")°/\(dayData?.mintempC ?? "?")°"
-        }
-    }
-
-    private func getMinMaxURL(dayData: DailyWeather?) -> (minURL: String, maxURL: String) {
-        guard let dayData = dayData else {
-            return ("", "")
-        }
-
-        /* Work out the min and max icon indexes to set. Also work out average chance of rain */
-        var minTemp = 100, maxTemp = -100
-        var minURL = "", maxURL = ""
-        for hourData in dayData.hourly {
-            let hourTemp = Int(hourData.tempC)
-            if hourTemp ?? 100 < minTemp {
-                minTemp = hourTemp ?? 100
-                minURL = hourData.getWeatherIconURL()
-            }
-            if hourTemp ?? -100 > maxTemp {
-                maxTemp = hourTemp ?? -100
-                maxURL = hourData.getWeatherIconURL()
-            }
-        }
-
-        return (minURL, maxURL)
-    }
-
-    private func calculateDailyChanceOfRain(dayData: DailyWeather?) -> Int {
-        guard let dayData = dayData, dayData.hourly.count > 0 else {
-            return 0
-        }
-
-        var totalChanceOfRain = 0
-        for hourlyData in dayData.hourly {
-            totalChanceOfRain += Int(hourlyData.chanceofrain) ?? 0
-        }
-
-        return totalChanceOfRain / dayData.hourly.count
-    }
-
-    private func formatHourlyTime(timeString: String) -> String {
-        var padded = timeString
-
-        while padded.count < 4 {
-            padded = "0\(padded)"
-        }
-
-        guard let date = timeInFormatter.date(from: padded) else {
-            return padded
-        }
-        return timeOutFormatter.string(from: date)
-    }
-
-    private func formatDailyDay(dateString: String) -> String {
-        guard let date = dailyInFormatter.date(from: dateString) else {
-            return dateString
-        }
-        return dailyOutFormatter.string(from: date)
-    }
-
-    private func dropImageFor(chance: Int) -> UIImage? {
-        if chance > 70 {
-            return fullDrop
-        } else if chance > 20 {
-            return halfDrop
-        } else {
-            return emptyDrop
+            dailyViews[i].dayLabel.text = dayData?.formattedDate
+            dailyViews[i].chanceOfRainImageView.image = dayData?.chanceOfRainImage
+            dailyViews[i].chanceOfRainLabel.text = dayData?.chanceOfRain
+            dailyViews[i].maxWeatherIconImage.downloaded(from: dayData?.maxTempURL ?? "")
+            dailyViews[i].minWeatherIconImage.downloaded(from: dayData?.minTempURL ?? "")
+            dailyViews[i].temperatureLabel.text = dayData?.formattedTemp
         }
     }
 }

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import UIKit
 
 protocol WeatherViewModelDelegate: class {
     func weatherViewModel(weatherUpdated weatherViewModel: WeatherViewModel, error: Bool, message: String)
@@ -20,15 +21,31 @@ class WeatherViewModel {
 
     /* This is composed when receiving weather updates, not just the list from today.
      It should be the next five hourly entries, calculated on load and the current time. */
-    private var hourlyWeather: [HourlyWeather]?
+    private var hourlyWeather: [AggregateHourlyData]?
 
-    private var timeFormatter: DateFormatter
+    /* Too many date formatters, but I think needed for the in and out formatting? */
+    private let dailyInFormatter: DateFormatter
+    private let dailyOutFormatter: DateFormatter
+    private let timeInFormatter: DateFormatter
+    private let timeOutFormatter: DateFormatter
+
+    /* Rain drop images for reuse */
+    private let emptyDrop = UIImage(named: "EmptyDrop")
+    private let halfDrop = UIImage(named: "HalfDrop")
+    private let fullDrop = UIImage(named: "FullDrop")
 
     init() {
         self.weatherModel = WeatherModel()
 
-        timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "yyyy-MM-dd HHss"
+        /* Configure date formatters */
+        dailyInFormatter = DateFormatter()
+        dailyInFormatter.dateFormat = "yyyy-MM-dd"
+        dailyOutFormatter = DateFormatter()
+        dailyOutFormatter.dateFormat = "EEEE"
+        timeInFormatter = DateFormatter()
+        timeInFormatter.dateFormat = "yyyy-MM-dd HHss"
+        timeOutFormatter = DateFormatter()
+        timeOutFormatter.dateFormat = "HH:mm"
     }
 
     func getSelectedCity() -> City? {
@@ -65,7 +82,7 @@ class WeatherViewModel {
         return currentConditions
     }
 
-    func getDailyWeather(at index: Int) -> DailyWeather? {
+    func getDailyWeather(at index: Int) -> AggregateDailyData? {
         guard let dailyWeather = dailyWeather else {
             return nil
         }
@@ -74,10 +91,20 @@ class WeatherViewModel {
             return nil
         }
 
-        return dailyWeather[index]
+        let dayDate = index == 0 ? "Today" : dailyOutFormatter.string(from: dailyInFormatter.date(from: dailyWeather[index].date) ?? Date())
+        let minMaxURL = getMinMaxURL(dayData: dailyWeather[index])
+        let chanceOfRain = calculateDailyChanceOfRain(dayData: dailyWeather[index])
+        let dailyData = AggregateDailyData(dailyWeather: dailyWeather[index],
+                                           formattedDate: dayDate,
+                                           chanceOfRain: "\(chanceOfRain)%",
+                                           chanceOfRainImage: dropImageFor(chance: chanceOfRain),
+                                           minTempURL: minMaxURL.minURL,
+                                           maxTempURL: minMaxURL.maxURL,
+                                           formattedTemp: "\(dailyWeather[index].maxtempC)°/\(dailyWeather[index].mintempC)°")
+        return dailyData
     }
 
-    func getHourlyWeather(at index: Int) -> HourlyWeather? {
+    func getHourlyWeather(at index: Int) -> AggregateHourlyData? {
         // This will not look directly at todays list, but rather the calculated list
         guard let hourlyWeather = hourlyWeather else {
             return nil
@@ -94,7 +121,7 @@ class WeatherViewModel {
         if let dailyWeather = dailyWeather {
             // Calculate the hourly weather
             let currentDate = Date()
-            var hourly = [HourlyWeather]()
+            var hourly = [AggregateHourlyData]()
 
             for daily in dailyWeather where hourly.count < 5 {
                 for hour in daily.hourly where hourly.count < 5 {
@@ -106,7 +133,9 @@ class WeatherViewModel {
                     let alreadyFoundFirstFutureHour = hourly.count > 0
 
                     if alreadyFoundFirstFutureHour || hourDate > currentDate {
-                        hourly.append(hour)
+                        hourly.append(AggregateHourlyData(hourlyWeather: hour,
+                                                          formattedTime: timeOutFormatter.string(from: hourDate),
+                                                          chanceOfRainImage: dropImageFor(chance: Int(hour.chanceofrain) ?? 0)))
                     }
                 }
             }
@@ -123,6 +152,48 @@ class WeatherViewModel {
             paddedTime = "0\(paddedTime)"
         }
 
-        return timeFormatter.date(from: "\(date) \(paddedTime)")
+        return timeInFormatter.date(from: "\(date) \(paddedTime)")
+    }
+
+    private func dropImageFor(chance: Int) -> UIImage? {
+        if chance > 70 {
+            return fullDrop
+        } else if chance > 20 {
+            return halfDrop
+        } else {
+            return emptyDrop
+        }
+    }
+
+    private func getMinMaxURL(dayData: DailyWeather) -> (minURL: String, maxURL: String) {
+        /* Work out the min and max icon indexes to set. Also work out average chance of rain */
+        var minTemp = 100, maxTemp = -100
+        var minURL = "", maxURL = ""
+        for hourData in dayData.hourly {
+            let hourTemp = Int(hourData.tempC)
+            if hourTemp ?? 100 < minTemp {
+                minTemp = hourTemp ?? 100
+                minURL = hourData.getWeatherIconURL()
+            }
+            if hourTemp ?? -100 > maxTemp {
+                maxTemp = hourTemp ?? -100
+                maxURL = hourData.getWeatherIconURL()
+            }
+        }
+
+        return (minURL, maxURL)
+    }
+
+    private func calculateDailyChanceOfRain(dayData: DailyWeather) -> Int {
+        if dayData.hourly.count == 0 {
+            return 0
+        }
+
+        var totalChanceOfRain = 0
+        for hourlyData in dayData.hourly {
+            totalChanceOfRain += Int(hourlyData.chanceofrain) ?? 0
+        }
+
+        return totalChanceOfRain / dayData.hourly.count
     }
 }
