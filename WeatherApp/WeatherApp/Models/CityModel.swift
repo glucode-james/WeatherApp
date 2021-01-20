@@ -48,14 +48,7 @@ class CityModel {
                                                                options: .allowFragments) as? [String: Any] {
             // Process the response
             if let jsonData = json["data"] as? [String: Any] {
-                if let jsonError = jsonData["error"] as? [[String: String]],
-                   jsonError.count >= 1,
-                   let jsonMessage = jsonError[0]["msg"] {
-
-                    message = jsonMessage
-                } else {
-                    message = "Unexpected server response. Please try again."
-                }
+                message = getDataErrorMessage(jsonData)
             } else if let jsonSearchAPI = json["search_api"] as? [String: Any],
                       let jsonResult = jsonSearchAPI["result"] as? [[String: Any]] {
                 let decoder = JSONDecoder()
@@ -74,5 +67,16 @@ class CityModel {
 
         completion(success, message, cities)
 
+    }
+
+    func getDataErrorMessage(_ jsonData: [String: Any]) -> String {
+        if let jsonError = jsonData["error"] as? [[String: String]],
+           jsonError.count >= 1,
+           let jsonMessage = jsonError[0]["msg"] {
+
+            return jsonMessage
+        } else {
+            return "Unexpected server response. Please try again."
+        }
     }
 }
