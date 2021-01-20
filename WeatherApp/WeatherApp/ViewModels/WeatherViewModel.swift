@@ -8,9 +8,13 @@ import UIKit
 
 protocol WeatherViewModelDelegate: class {
     func weatherViewModel(weatherUpdated weatherViewModel: WeatherViewModel, error: Bool, message: String)
+    func weatherViewModel(locationServicesDisabled weatherViewModel: WeatherViewModel)
 }
 
 class WeatherViewModel {
+
+    private let baseMaxTemp = -1000
+    private let baseMinTemp = 1000
 
     private let weatherModel: WeatherModel
 
@@ -34,6 +38,8 @@ class WeatherViewModel {
     private let halfDrop = UIImage(named: "HalfDrop")
     private let fullDrop = UIImage(named: "FullDrop")
 
+    var updateWeatherOnLocationUpdate = false
+
     init() {
         self.weatherModel = WeatherModel()
 
@@ -48,6 +54,11 @@ class WeatherViewModel {
         timeOutFormatter.dateFormat = "HH:mm"
     }
 
+    func useMyLocation() {
+        // This must just be saved as the current city, not added to the list
+        UserDefaultsModel.getInstance().saveSelected(city: MyLocationModel.myLocation)
+    }
+
     func getSelectedCity() -> City? {
         return UserDefaultsModel.getInstance().selectedCity()
     }
@@ -59,7 +70,26 @@ class WeatherViewModel {
             return
         }
 
-        self.loadWeatherFor(lat: city.latitude, long: city.longitude)
+        // If we are using "My Location", check for or wait for coordinates, otherwise use the selected city
+        if city.internalID == MyLocationModel.myLocationInternalID {
+            loadWeatherForMyLocation()
+        } else {
+            self.loadWeatherFor(lat: city.latitude, long: city.longitude)
+        }
+    }
+
+    private func loadWeatherForMyLocation() {
+        if let location = MyLocationModel.getInstance().getCurrentLocation() {
+            self.loadWeatherFor(lat: String(location.coordinate.latitude), long: String(location.coordinate.longitude))
+        } else {
+            updateWeatherOnLocationUpdate = true
+            MyLocationModel.getInstance().delegate = self
+            MyLocationModel.getInstance().startUpdating()
+        }
+    }
+
+    func stopLocationUpdates() {
+        MyLocationModel.getInstance().stopUpdating()
     }
 
     func loadWeatherFor(lat: String, long: String) {
@@ -167,16 +197,16 @@ class WeatherViewModel {
 
     private func getMinMaxURL(dayData: DailyWeather) -> (minURL: String, maxURL: String) {
         /* Work out the min and max icon indexes to set. Also work out average chance of rain */
-        var minTemp = 100, maxTemp = -100
+        var minTemp = baseMinTemp, maxTemp = baseMaxTemp
         var minURL = "", maxURL = ""
         for hourData in dayData.hourly {
             let hourTemp = Int(hourData.tempC)
-            if hourTemp ?? 100 < minTemp {
-                minTemp = hourTemp ?? 100
+            if hourTemp ?? baseMinTemp < minTemp {
+                minTemp = hourTemp ?? baseMinTemp
                 minURL = hourData.getWeatherIconURL()
             }
-            if hourTemp ?? -100 > maxTemp {
-                maxTemp = hourTemp ?? -100
+            if hourTemp ?? baseMaxTemp > maxTemp {
+                maxTemp = hourTemp ?? baseMaxTemp
                 maxURL = hourData.getWeatherIconURL()
             }
         }
@@ -195,5 +225,20 @@ class WeatherViewModel {
         }
 
         return totalChanceOfRain / dayData.hourly.count
+    }
+}
+
+extension WeatherViewModel: MyLocationModelDelegate {
+    // MARK: - Delegate Functions
+    func myLocationModel(locationUpdated myLocationModel: MyLocationModel) {
+        if updateWeatherOnLocationUpdate,
+           let location = myLocationModel.getCurrentLocation() {
+            updateWeatherOnLocationUpdate = false
+            self.loadWeatherFor(lat: String(location.coordinate.latitude), long: String(location.coordinate.longitude))
+        }
+    }
+
+    func myLocationModel(locationServicesDisabled myLocationModel: MyLocationModel) {
+        delegate?.weatherViewModel(locationServicesDisabled: self)
     }
 }

@@ -14,6 +14,11 @@ class LocalSearchCityViewModel: BaseCityViewModel {
         self.cities = UserDefaultsModel.getInstance().cities()
     }
 
+    func useMyLocation() {
+        // This must just be saved as the current city, not added to the list
+        UserDefaultsModel.getInstance().saveSelected(city: MyLocationModel.myLocation)
+    }
+
     override func cityViewModel(search value: String) {
         // Load up all the local cities
         let storedCities = UserDefaultsModel.getInstance().cities()

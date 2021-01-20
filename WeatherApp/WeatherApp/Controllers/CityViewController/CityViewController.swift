@@ -36,6 +36,8 @@ class CityViewController: UIViewController {
         self.title = "City Finder"
         let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(self.backPressed))
         self.navigationItem.leftBarButtonItem = backButton
+        let myLocationButton = UIBarButtonItem(title: "My Location", style: .done, target: self, action: #selector(self.myLocationPressed))
+        self.navigationItem.rightBarButtonItem = myLocationButton
 
         // Configure view model delegates
         localViewModel.delegate = self
@@ -56,6 +58,12 @@ class CityViewController: UIViewController {
         // Configure TableView
         tableView.dataSource = self
         tableView.delegate = self
+    }
+
+    @objc func myLocationPressed() {
+        self.localViewModel.useMyLocation()
+
+        delegate?.cityViewController(citySelected: self)
     }
 
     @objc func backPressed() {

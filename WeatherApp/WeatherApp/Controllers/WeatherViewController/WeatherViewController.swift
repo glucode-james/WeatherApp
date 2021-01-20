@@ -9,6 +9,10 @@ class WeatherViewController: UIViewController {
 
     /* UI Outlets */
     @IBOutlet weak var scrollView: UIScrollView!
+    @IBOutlet weak var weatherView: UIView!
+    @IBOutlet weak var noCitiesView: UIView!
+    @IBOutlet weak var cityFinderButton: UIButton!
+    @IBOutlet weak var topStackView: UIStackView!
 
     /* Current Conditions Outlets */
     @IBOutlet weak var locationLabel: UILabel!
@@ -52,10 +56,12 @@ class WeatherViewController: UIViewController {
 
         // Do any additional setup after loading the view.
         viewModel.delegate = self
+        cityFinderButton.setImage(cityFinderButton.imageView?.image?.withRenderingMode(.alwaysTemplate), for: .normal)
+        cityFinderButton.imageView?.tintColor = .label
 
         // Configure date formatters
         dateFormatter.dateFormat = "EEEE, dd MMM HH:mm"
-        
+
         // Configure refresh control for scrollview
         scrollView.refreshControl = refreshControl
         refreshControl.addTarget(self,
@@ -72,15 +78,50 @@ class WeatherViewController: UIViewController {
             dailyStackView.addArrangedSubview(view)
         }
 
-        // Begin loading weather data
-        refreshControl.beginRefreshing()
-        scrollView.setContentOffset(CGPoint(x: 0, y: scrollView.contentOffset.y - (refreshControl.frame.size.height)),
-                                    animated: true)
-        viewModel.loadWeatherForSelectedCity()
+        // If there is a selected city, load its weather. Otherwise offer the user a choice.
+        if viewModel.getSelectedCity() != nil {
+            weatherView.isHidden = false
+            loadWeatherForSelectedCity()
+        } else {
+            noCitiesView.isHidden = false
+        }
+    }
+
+    // MARK: - No Locations Functions
+    @IBAction func useMyLocationPressed(_ sender: Any) {
+        viewModel.useMyLocation()
+
+        loadWeatherForSelectedCity(updateVisibleView: true)
+    }
+
+    @IBAction func addALocationPressed(_ sender: Any) {
+        openCityViewController(sender)
     }
 
     @objc func handleRefreshWeatherData() {
         viewModel.loadWeatherForSelectedCity()
+    }
+
+    private func loadWeatherForSelectedCity(updateVisibleView: Bool = false) {
+        if updateVisibleView {
+            animateShowWeather()
+        }
+
+        refreshControl.beginRefreshing()
+        scrollView.setContentOffset(CGPoint(x: 0, y: self.scrollView.contentOffset.y - (self.refreshControl.frame.size.height)),
+                                    animated: true)
+
+        viewModel.loadWeatherForSelectedCity()
+    }
+
+    private func animateShowWeather() {
+        UIView.animate(withDuration: 0.2,
+                       animations: {
+                        self.noCitiesView.isHidden = true
+                        self.weatherView.isHidden = false
+                        self.topStackView.layoutIfNeeded()
+                       },
+                       completion: nil)
     }
 
     @IBAction func openCityViewController(_ sender: Any) {
@@ -101,11 +142,7 @@ class WeatherViewController: UIViewController {
             return
         }
 
-        if let city = viewModel.getSelectedCity() {
-            locationLabel.text = city.cityName()
-        } else {
-            locationLabel.text = "Current Location"
-        }
+        locationLabel.text = viewModel.getSelectedCity()?.cityName()
 
         currentTemperatureLabel.text = "\(currentConditions.temp_C)°"
         currentDescLabel.text = currentConditions.getWeatherDesc()
@@ -150,6 +187,18 @@ class WeatherViewController: UIViewController {
 }
 
 extension WeatherViewController: WeatherViewModelDelegate {
+    func weatherViewModel(locationServicesDisabled weatherViewModel: WeatherViewModel) {
+        let alert = UIAlertController(title: "Location Services Disabled",
+                                      message: "You need to enable location services for the app if you want to use your current location",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+
+        DispatchQueue.main.async {
+            self.refreshControl.endRefreshing()
+            self.present(alert, animated: true)
+        }
+    }
+
     func weatherViewModel(weatherUpdated weatherViewModel: WeatherViewModel, error: Bool, message: String) {
         // Dismiss the refresh control.
         DispatchQueue.main.async {
@@ -175,12 +224,7 @@ extension WeatherViewController: CityViewControllerDelegate {
     func cityViewController(citySelected controller: CityViewController) {
         /* Begin repopulating the weather data when the city controller selects a new city */
         controller.dismiss(animated: true, completion: {
-            self.refreshControl.beginRefreshing()
-            self.scrollView.setContentOffset(CGPoint(x: 0, y: self.scrollView.contentOffset.y - (self.refreshControl.frame.size.height)),
-                                             animated: true)
-
-            self.viewModel.loadWeatherForSelectedCity()
+            self.loadWeatherForSelectedCity(updateVisibleView: true)
         })
-
     }
 }

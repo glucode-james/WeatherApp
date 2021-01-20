@@ -2,8 +2,6 @@
 //  AggregateDailyData.swift
 //  WeatherApp
 //
-//  Created by James Sinclair on 2021/01/19.
-//
 
 import Foundation
 import UIKit
