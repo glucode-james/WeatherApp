@@ -166,9 +166,9 @@ class WeatherViewController: UIViewController {
 
             hourlyViews[i].timeLabel.text = hourData?.formattedTime
             hourlyViews[i].weatherIconImage.downloaded(from: hourData?.hourlyWeather.getWeatherIconURL() ?? "")
-            hourlyViews[i].temperatureLabel.text = "\(hourData?.hourlyWeather.tempC ?? "?")°"
+            hourlyViews[i].temperatureLabel.text = "\(hourData?.hourlyWeather.tempC ?? "-")°"
             hourlyViews[i].chanceOfRainImageView.image = hourData?.chanceOfRainImage
-            hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.hourlyWeather.chanceofrain ?? "?")%"
+            hourlyViews[i].chanceOfRainLabel.text = "\(hourData?.hourlyWeather.chanceofrain ?? "-")%"
         }
     }
 

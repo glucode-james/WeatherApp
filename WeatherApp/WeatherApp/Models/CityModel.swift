@@ -66,7 +66,6 @@ class CityModel {
         }
 
         completion(success, message, cities)
-
     }
 
     func getDataErrorMessage(_ jsonData: [String: Any]) -> String {
